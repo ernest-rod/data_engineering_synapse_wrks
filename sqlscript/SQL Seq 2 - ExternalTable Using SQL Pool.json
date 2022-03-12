@@ -1,0 +1,17 @@
+{
+	"name": "SQL Seq 2 - ExternalTable Using SQL Pool",
+	"properties": {
+		"content": {
+			"query": "-- Lab - SQL Pool - External Tables - CSV\n\nCREATE MASTER KEY ENCRYPTION BY PASSWORD = 'P@ssw0rd@123';\n\n-- Here we are using the Storage account key for authorization\n\nCREATE DATABASE SCOPED CREDENTIAL AzureStorageCredential\nWITH\n  IDENTITY = 'dataengineercertdatalake',\n  SECRET = 'T88laEedf/pQNKwVp+m4bxw1hCIHsLu53trRthcCgpUOZCCmhF/Tku/D0pr1JRzgu8cJQF4H3J3ceUVzNMZUYg==';\n\n-- In the SQL pool, we can use Hadoop drivers to mention the source\n\nCREATE EXTERNAL DATA SOURCE log_data\nWITH (    LOCATION   = 'abfss://trainingdata@dataengineercertdatalake.dfs.core.windows.net',\n          CREDENTIAL = AzureStorageCredential,\n          TYPE = HADOOP\n)\n\nCREATE EXTERNAL FILE FORMAT TextFileFormat WITH (  \n      FORMAT_TYPE = DELIMITEDTEXT,  \n    FORMAT_OPTIONS (  \n        FIELD_TERMINATOR = ',',\n        FIRST_ROW = 2))\n\n\nCREATE EXTERNAL TABLE [logdata]\n(\n    [Id] [int] ,\n\t[Correlationid] [varchar](200) ,\n\t[Operationname] [varchar](200) ,\n\t[Status] [varchar](100) ,\n\t[Eventcategory] [varchar](100) ,\n\t[Level] [varchar](100) ,\n\t[Time] [datetime] ,\n\t[Subscription] [varchar](200) ,\n\t[Eventinitiatedby] [varchar](1000) ,\n\t[Resourcetype] [varchar](1000) ,\n\t[Resourcegroup] [varchar](1000) \n)\nWITH (\n LOCATION = '/Log.csv',\n    DATA_SOURCE = log_data,  \n    FILE_FORMAT = TextFileFormat\n)\n\n\n\nSELECT * FROM logdata\n\n\nSELECT [Operationname] , COUNT([Operationname]) as [Operation Count]\nFROM logdata\nGROUP BY [Operationname]\nORDER BY [Operation Count]",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "Training_Pool",
+				"poolName": "Training_Pool"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

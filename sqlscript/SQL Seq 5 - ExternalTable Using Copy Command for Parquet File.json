@@ -1,0 +1,17 @@
+{
+	"name": "SQL Seq 5 - ExternalTable Using Copy Command for Parquet File",
+	"properties": {
+		"content": {
+			"query": "-- Lab - Loading data into a table - COPY Command - Parquet\n--do this from the admin login\nDELETE FROM [logdata]\n\n-- Recreate the table\n-- Here again I am using the data type with MAX because that is how I generated the parquet files when it came to the data type\n-- Here we need to specify the clustered index based on a column , because indexes can't be created on varchar(MAX)\n\nCREATE TABLE [logdata]\n(\n        [Id] [int] ,\n\t[Correlationid] [varchar](200) ,\n\t[Operationname] [varchar](200) ,\n\t[Status] [varchar](100) ,\n\t[Eventcategory] [varchar](100) ,\n\t[Level] [varchar](100) ,\n\t[Time] [datetime] ,\n\t[Subscription] [varchar](200) ,\n\t[Eventinitiatedby] [varchar](1000) ,\n\t[Resourcetype] [varchar](1000) ,\n\t[Resourcegroup] [varchar](1000) \n)\n\n-- Grant the permissions again. Because when you drop the table, you also drop the associated permission\n--Not necessary because we are going to delete from table only and not drop it\nGRANT INSERT ON logdata TO user_load;\nGRANT SELECT ON logdata TO user_load;\n\n--check if secret expired and generate a new one\nCOPY INTO [logdata] FROM 'https://dataengineercertdatalake.blob.core.windows.net/trainingdata/raw/parquet/*.parquet'\nWITH\n(\nFILE_TYPE='PARQUET',\nCREDENTIAL=(IDENTITY= 'Shared Access Signature', SECRET='sv=2020-08-04&ss=b&srt=sco&sp=rlx&se=2021-09-11T06:51:11Z&st=2021-09-08T22:51:11Z&spr=https&sig=8VkuScGPyTimclAD1k7%2Benku5nayGA9%2FZFjcvL005Ww%3D')\n)\n\n--you wont be able to see the table when logged as user_load\nSELECT * FROM logdata",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

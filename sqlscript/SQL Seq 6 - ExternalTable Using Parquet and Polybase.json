@@ -1,0 +1,17 @@
+{
+	"name": "SQL Seq 6 - ExternalTable Using Parquet and Polybase",
+	"properties": {
+		"content": {
+			"query": "-- Lab - Loading data using PolyBase\n\n-- If you want to see existing database scoped credentials\nSELECT * FROM sys.database_scoped_credentials\n\nCREATE DATABASE SCOPED CREDENTIAL AzureStorageCredential\nWITH\n  IDENTITY = 'dataengineercertdatalake',\n  SECRET = 'VqJnhlUibasTfhSuAxkgIgY97GjRzHL9VNOPkjD8y+KYzl1LSDCflF6LXlrezAYKL3Mf1buLdZoJXa/38BXLYA==';\n\n-- If you want to see the external data sources\nSELECT * FROM sys.external_data_sources \n\n\nCREATE EXTERNAL DATA SOURCE log_data\nWITH (    LOCATION   = 'abfss://trainingdata@dataengineercertdatalake.dfs.core.windows.net',\n          CREDENTIAL = AzureStorageCredential,\n          TYPE = HADOOP\n)\n\n-- If you want to see the external file formats\n\nSELECT * FROM sys.external_file_formats\n\nCREATE EXTERNAL FILE FORMAT parquetfile  \nWITH (  \n    FORMAT_TYPE = PARQUET,  \n    DATA_COMPRESSION = 'org.apache.hadoop.io.compress.SnappyCodec'  \n);\n\n\n-- Drop the existing logdata table\nDROP TABLE [logdata]\n\n-- Create the external table as the admin user\n\nCREATE EXTERNAL TABLE [logdata_external]\n(\n [Id] [int] ,\n\t[Correlationid] [varchar](200) ,\n\t[Operationname] [varchar](200) ,\n\t[Status] [varchar](100) ,\n\t[Eventcategory] [varchar](100) ,\n\t[Level] [varchar](100) ,\n\t[Time] [datetime] ,\n\t[Subscription] [varchar](200) ,\n\t[Eventinitiatedby] [varchar](1000) ,\n\t[Resourcetype] [varchar](1000) ,\n\t[Resourcegroup] [varchar](1000) \n)\nWITH (\n LOCATION = '/raw/parquet/',\n    DATA_SOURCE = log_data,  \n    FILE_FORMAT = parquetfile\n)\n\n-- Now create a normal table by selecting all of the data from the external table\n\nCREATE TABLE [logdata]\nWITH\n(\nDISTRIBUTION = ROUND_ROBIN,\nCLUSTERED INDEX (id)   \n)\nAS\nSELECT  *\nFROM  [logdata_external];\n\n\nSELECT * FROM logdata;\n\n\n\n\n\n\n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "Training_Pool",
+				"poolName": "Training_Pool"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

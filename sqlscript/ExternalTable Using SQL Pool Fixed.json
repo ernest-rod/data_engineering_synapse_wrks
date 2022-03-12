@@ -1,0 +1,18 @@
+{
+	"name": "ExternalTable Using SQL Pool Fixed",
+	"properties": {
+		"description": "Fixed problem with Datetime field not compatible with Hadoop.",
+		"content": {
+			"query": "\nDROP EXTERNAL TABLE logdata;\n\nCREATE EXTERNAL TABLE [logdata]\n(\n    [Id] [int] ,\n\t[Correlationid] [varchar](200) ,\n\t[Operationname] [varchar](200) ,\n\t[Status] [varchar](100) ,\n\t[Eventcategory] [varchar](100) ,\n\t[Level] [varchar](100) ,\n\t[Time] [datetime] ,\n\t[Subscription] [varchar](200) ,\n\t[Eventinitiatedby] [varchar](1000) ,\n\t[Resourcetype] [varchar](1000) ,\n\t[Resourcegroup] [varchar](1000) \n)\nWITH (\n LOCATION = 'cleaned/Log.csv',\n    DATA_SOURCE = log_data,  \n    FILE_FORMAT = TextFileFormat\n)\n\n\n\nSELECT * FROM logdata\n\n\nSELECT [Operationname] , COUNT([Operationname]) as [Operation Count]\nFROM logdata\nGROUP BY [Operationname]\nORDER BY [Operation Count]",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "Training_Pool",
+				"poolName": "Training_Pool"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

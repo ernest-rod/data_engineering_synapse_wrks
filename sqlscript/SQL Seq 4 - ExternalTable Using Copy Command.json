@@ -1,0 +1,17 @@
+{
+	"name": "SQL Seq 4 - ExternalTable Using Copy Command",
+	"properties": {
+		"content": {
+			"query": "-- Lab - Loading data into a table - COPY Command - CSV\n\n-- Never use the admin account for load operations.\n-- Create a seperate user for load operations\n\n\n-- This has to be run in the master database\nCREATE LOGIN user_load WITH PASSWORD = 'Azure@123';\n\nCREATE USER user_load FOR LOGIN user_load;\nGRANT ADMINISTER DATABASE BULK OPERATIONS TO user_load;\nGRANT CREATE TABLE TO user_load;\nGRANT ALTER ON SCHEMA::dbo TO user_load;\n\nCREATE WORKLOAD GROUP DataLoads\nWITH ( \n    MIN_PERCENTAGE_RESOURCE = 100\n    ,CAP_PERCENTAGE_RESOURCE = 100\n    ,REQUEST_MIN_RESOURCE_GRANT_PERCENT = 100\n    );\n\nCREATE WORKLOAD CLASSIFIER [ELTLogin]\nWITH (\n        WORKLOAD_GROUP = 'DataLoads'\n    ,MEMBERNAME = 'user_load'\n);\n\n-- Drop the external table if it exists\nDROP EXTERNAL TABLE logdata\n\n-- Create a normal table\n-- Login as the new user and create the table\n-- Here I have added more constraints when it comes to the width of the data type\n\nCREATE TABLE [logdata]\n(\n    [Id] [int] ,\n\t[Correlationid] [varchar](200) ,\n\t[Operationname] [varchar](200) ,\n\t[Status] [varchar](100) ,\n\t[Eventcategory] [varchar](100) ,\n\t[Level] [varchar](100) ,\n\t[Time] [datetime] ,\n\t[Subscription] [varchar](200) ,\n\t[Eventinitiatedby] [varchar](1000) ,\n\t[Resourcetype] [varchar](1000) ,\n\t[Resourcegroup] [varchar](1000) \n)\n\n-- Grant the required privileges to the new user\n\nGRANT INSERT ON logdata TO user_load;\nGRANT SELECT ON logdata TO user_load;\n\n-- Now log in as the new user\n-- The FIRSTROW option helps to ensure the first header row is not part of the COPY implementation\n-- https://docs.microsoft.com/en-us/sql/t-sql/statements/copy-into-transact-sql?view=azure-sqldw-latest&preserve-view=true\n\n\nSELECT * FROM [logdata]\n\n-- Here there is no authentication/authorization, so you need to allow public access for the container\n--for the sake of simplicity, go to data lake storage and Change access level of the container to\n-- Bolb (anonymous read access for blobs only)\nCOPY INTO logdata FROM 'https://dataengineercertdatalake.blob.core.windows.net/trainingdata/Log.csv'\nWITH\n(\nFIRSTROW=2\n)\n\n\n\n\n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "Training_Pool",
+				"poolName": "Training_Pool"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
